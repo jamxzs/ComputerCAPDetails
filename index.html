@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For my bee</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #ffffff, #e6e6fa);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      color: #6a0dad;
+    }
+    
+    /* Password Modal with Number Pad */
+    .password-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(230, 230, 250, 0.95);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      z-index: 100;
+      transition: opacity 0.5s ease;
+    }
+    .password-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 350px; width: 90%;
+      animation: bounceIn 1s forwards;
+    }
+    .password-content h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px; margin-bottom: 20px;
+      color: #6a0dad;
+    }
+    .code-dots {
+      display: flex; justify-content: center;
+      gap: 10px; margin-bottom: 20px;
+    }
+    .dot {
+      width: 15px; height: 15px;
+      border-radius: 50%; border: 2px solid #6a0dad;
+      background: transparent; transition: background 0.3s;
+    }
+    .dot.filled { background: #6a0dad; }
+    .numpad {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 15px; margin-top: 10px;
+    }
+    .numpad button {
+      background: #e6e6fa; border: none;
+      padding: 20px; border-radius: 50%;
+      font-size: 20px; font-weight: bold;
+      color: #6a0dad; cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+    .numpad button:hover {
+      transform: scale(1.1);
+      background: #d8bfd8;
+    }
+    
+    /* Welcome Screen */
+    .welcome-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #ffffff, #e6e6fa);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      z-index: 99;
+      transition: opacity 0.8s ease;
+    }
+    .welcome-message {
+      font-family: 'Dancing Script', cursive;
+      font-size: 48px; color: #6a0dad;
+      text-align: center;
+      animation: pulse 2s infinite, float 3s ease-in-out infinite;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Main Content */
+    .container {
+      width: 100%; max-width: 900px;
+      padding: 20px; margin-top: 50px;
+    }
+    .tabs {
+      display: flex; justify-content: center;
+      gap: 10px; margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: rgba(255,255,255,0.7);
+      border: none; padding: 12px 20px;
+      border-radius: 50px; cursor: pointer;
+      font-size: 16px; font-weight: 600;
+      color: #6a0dad; transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tab:hover {
+      background: rgba(255,255,255,0.9);
+      transform: translateY(-3px);
+    }
+    .tab.active {
+      background: white; color: #6a0dad;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    .content-area {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      min-height: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      position: relative; overflow: hidden;
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    .tab-content.active { display: block; }
+    
+    /* Love Letter Tab */
+    .letter {
+      padding: 20px; background: #f5f0ff;
+      border-radius: 15px; border: 2px dashed #d8bfd8;
+      margin-bottom: 20px; cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .letter-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 15px;
+    }
+    .letter h3 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 28px; color: #6a0dad;
+    }
+    .letter-content {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.5s ease;
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+    .letter.expanded .letter-content { max-height: 800px; }
+    
+    /* Music Tab */
+    .song {
+      background: #f8f8ff;
+      padding: 15px; border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .song-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #6a0dad;
+    }
+    audio { width: 100%; outline: none; }
+    .song-caption {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #6a0dad;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    /* Gallery Tab */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .gallery-item {
+      border-radius: 10px; overflow: hidden;
+      height: 200px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .gallery-item:hover { transform: scale(1.05); }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
+    /* Decorative Elements */
+    .heart, .teddy-bear {
+      position: absolute; z-index: -1;
+      opacity: 0.2; pointer-events: none;
+    }
+    .heart {
+      color: #6a0dad; font-size: 24px;
+      animation: float 6s ease-in-out infinite;
+    }
+    .teddy-bear {
+      font-size: 32px;
+      animation: float 8s ease-in-out infinite;
+    }
+    
+    /* Animations */
+    @keyframes bounceIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    @media (max-width: 768px) {
+      .welcome-message { font-size: 36px; }
+      .tabs { flex-direction: column; align-items: center; }
+      .tab { width: 100%; justify-content: center; }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Password Modal -->
+  <div class="password-modal" id="passwordModal">
+    <div class="password-content">
+      <h2>Enter the code</h2>
+      <div class="code-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="numpad">
+        <button>1</button><button>2</button><button>3</button>
+        <button>4</button><button>5</button><button>6</button>
+        <button>7</button><button>8</button><button>9</button>
+        <button>←</button><button>0</button><button>✔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome Screen -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <h1 class="welcome-message">Welcome my love, enjoy your stay</h1>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container" id="mainContent" style="display: none;">
+    <div class="tabs">
+      <button class="tab active" data-tab="love-letter"><span>❤️</span> Love Letter</button>
+      <button class="tab" data-tab="music"><span>🎵</span> Music</button>
+      <button class="tab" data-tab="gallery"><span>🌷</span> Us in Frames</button>
+    </div>
+
+    <div class="content-area">
+      <!-- Love Letter Tab -->
+      <div class="tab-content active" id="love-letter">
+        <h2>My Dearest</h2>
+        <div class="letter" id="loveLetter">
+          <div class="letter-header">
+            <h3>A Letter For You</h3>
+            <span>👇 Click to open</span>
+          </div>
+          <div class="letter-content">
+Hi bee,
+
+I want to start by saying I’m sorry. Sorry if there were moments when I let my pride stand in the way of showing you the sweetness and tenderness you deserve. Sometimes I hold back the words and gestures that could have made you feel more loved, not because I don’t care but because I’m stubborn. And for that, I truly regret it.
+
+But please, don’t ever think I can let you go. I can’t and I won’t. You mean far too much to me. You’re not someone I could simply walk away from, because my heart has already chosen you and it chooses you again and again, no matter how imperfect I may be.
+
+If you’ve noticed that sometimes I don’t reply right away, it’s not because I don’t want to talk to you. It’s because I’m here, pouring my effort into this. I even turned to this website because I honestly don’t know how to express myself well in chat, and I wanted to learn how to suyo you properly. It might sound funny, but it’s true. I’m learning, I’m trying, all because I want to give you the kind of love and affection you deserve.
+
+You’ve given me so much joy, comfort, and love, and the least I can do is fight against my own pride to be better for you. I don’t want you to ever feel unloved, unseen, or uncared for. You’re my heart’s home, and no amount of pride should ever get in the way of that truth.
+
+So please forgive me for the times I’ve fallen short. I promise to try harder, to love more openly, to make you feel in every way possible that you’re deeply cherished. I may not be perfect, but my love for you is real, constant, and unwavering.
+
+You’ll always be my choice, my love.
+          </div>
+        </div>
+      </div>
+
+      <!-- Music Tab -->
+      <div class="tab-content" id="music">
+        <h2>Songs that reminds me of you</h2>
+
+        <div class="song">
+          <div class="song-title">Panalangin – Apo Hiking Society</div>
+          <audio controls>
+            <source src="music1.mp3" type="audio/mpeg">
+            Your browser does not support the audio tag.
+          </audio>
+        </div>
+
+        <div class="song">
+          <div class="song-title">When I Met You – Apo Hiking Society</div>
+          <audio controls>
+            <source src="music2.mp3" type="audio/mpeg">
+            Your browser does not support the audio tag.
+          </audio>
+        </div>
+
+        <div class="song">
+          <div class="song-title">Aleluya [Wikain Mo]</div>
+          <audio controls>
+            <source src="music3.mp3" type="audio/mpeg">
+            Your browser does not support the audio tag.
+          </audio>
+          <div class="song-caption">Remember this music be? The one that we used to sing together during grade 7 panahon na puno tayo ng tawanan at kasiraan HAHAHAHAH</div>
+        </div>
+      </div>
+
+      <!-- Gallery Tab -->
+      <div class="tab-content" id="gallery">
+        <h2>Snapshots of laughter, love, and everything in between</h2>
+        <div class="gallery">
+          <div class="gallery-item"><img src="img1.jpg" alt="Photo 1"></div>
+          <div class="gallery-item"><img src="img2.jpg" alt="Photo 2"></div>
+          <div class="gallery-item"><img src="img3.jpg" alt="Photo 3"></div>
+          <div class="gallery-item"><img src="img4.jpg" alt="Photo 4"></div>
+          <div class="gallery-item"><img src="img5.jpg" alt="Photo 5"></div>
+          <div class="gallery-item"><img src="img6.jpg" alt="Photo 6"></div>
+          <div class="gallery-item"><img src="img7.jpg" alt="Photo 7"></div>
+          <div class="gallery-item"><img src="img8.jpg" alt="Photo 8"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <img src="" alt="Expanded view">
+  </div>
+
+  <!-- Decorative elements -->
+  <div class="heart" style="top:10%; left:5%;">❤️</div>
+  <div class="heart" style="top:20%; right:10%;">❤️</div>
+  <div class="heart" style="bottom:15%; left:15%;">❤️</div>
+  <div class="teddy-bear" style="top:30%; left:10%;">🧸</div>
+  <div class="teddy-bear" style="bottom:10%; right:5%;">🧸</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const passwordModal = document.getElementById('passwordModal');
+      const welcomeScreen = document.getElementById('welcomeScreen');
+      const mainContent = document.getElementById('mainContent');
+      const dots = document.querySelectorAll('.dot');
+      const numpadButtons = document.querySelectorAll('.numpad button');
+      
+      let enteredCode = "";
+      const correctCode = "031724";
+      
+      function updateDots() {
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('filled', index < enteredCode.length);
+        });
+      }
+      
+      numpadButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const value = button.textContent;
+          if (value === "←") {
+            enteredCode = enteredCode.slice(0, -1);
+            updateDots();
+          } else if (value === "✔") {
+            if (enteredCode === correctCode) {
+              passwordModal.style.opacity = "0";
+              setTimeout(() => { passwordModal.style.display = "none"; }, 500);
+              
+              setTimeout(() => {
+                welcomeScreen.style.opacity = "0";
+                setTimeout(() => {
+                  welcomeScreen.style.display = "none";
+                  mainContent.style.display = "block";
+                }, 800);
+              }, 1500);
+            } else {
+              enteredCode = "";
+              updateDots();
+              alert("Incorrect code, try again!");
+            }
+          } else {
+            if (enteredCode.length < 6) {
+              enteredCode += value;
+              updateDots();
+            }
+          }
+        });
+      });
+
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const target = tab.dataset.tab;
+          tabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === target) {
+              content.classList.add('active');
+            }
+          });
+        });
+      });
+
+      const letter = document.getElementById('loveLetter');
+      letter.addEventListener('click', () => {
+        letter.classList.toggle('expanded');
+      });
+
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = lightbox.querySelector('img');
+      const galleryItems = document.querySelectorAll('.gallery-item img');
+      galleryItems.forEach(img => {
+        img.addEventListener('click', () => {
+          lightbox.style.display = 'flex';
+          lightboxImg.src = img.src;
+        });
+      });
+      lightbox.addEventListener('click', () => {
+        lightbox.style.display = 'none';
+        lightboxImg.src = '';
+      });
+    });
+  </script>
+</body>
+</html>
